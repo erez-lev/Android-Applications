@@ -113,7 +113,15 @@ class MainActivity : AppCompatActivity() {
 
         }
 
+        // Set the negative button to be touchable.
         buttonNeg.setOnClickListener(negOperator)
+
+        // A listener for the clear button.
+        buttonClr.setOnClickListener { view ->
+            result.setText("")
+            operation.text = ""
+            operand1 = null
+        }
 
     }
 
