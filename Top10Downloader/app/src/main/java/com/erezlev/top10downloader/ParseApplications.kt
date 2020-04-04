@@ -32,6 +32,7 @@ class ParseApplications {
                         }
                     }
 
+
                     XmlPullParser.TEXT -> textValue = xpp.text
 
                     XmlPullParser.END_TAG -> {
@@ -48,7 +49,11 @@ class ParseApplications {
                                 "artist" -> currentRecord.artist = textValue
                                 "releasedate" -> currentRecord.releaseDate = textValue
                                 "summary" -> currentRecord.summary = textValue
-                                "image" -> currentRecord.imageURL = textValue
+                                "image" -> {
+                                    currentRecord.imageURL = textValue
+                                    Log.d(TAG, "ParseApplication: text value is $textValue")
+                                }
+
                             }
                         }
                     }

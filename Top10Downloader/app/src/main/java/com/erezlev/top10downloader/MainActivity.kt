@@ -40,9 +40,12 @@ class MainActivity : AppCompatActivity() {
 
     /** Properties: */
     private var downloadData: DownloadData? = null
-    private var feedUrl: String = "http://ax.itunes.apple.com/WebObjects/MZStoreServices.woa/ws/RSS/topfreeapplications/limit=%d/xml"
+    private var feedUrl: String =
+        "http://ax.itunes.apple.com/WebObjects/MZStoreServices.woa/ws/RSS/topfreeapplications/limit=%d/xml"
     private var feedLimit = 10
     private var currentFeedUrl = "INVALID"
+
+
 
 
     /** Methods */
@@ -52,9 +55,10 @@ class MainActivity : AppCompatActivity() {
 
         if (savedInstanceState != null) {
             feedUrl = savedInstanceState.getString(FEED_URL).toString()
-            feedLimit = savedInstanceState.getInt(FEED_LIMIT).toInt()
+            feedLimit = savedInstanceState.getInt(FEED_LIMIT)
         }
 
+        // Download URL from RSS feed.
         Log.d(TAG, "onCreate: feedUrl is $feedUrl")
         Log.d(TAG, "onCreate: feed limit is $feedLimit")
         downloadUrl(feedUrl.format(feedLimit))
@@ -133,6 +137,7 @@ class MainActivity : AppCompatActivity() {
             /** Properties: */
             var mContext: Context by Delegates.notNull()
             var mListView: ListView by Delegates.notNull()
+            var mimageUrl: String? = null
 
             init {
                 mContext = context
@@ -140,6 +145,7 @@ class MainActivity : AppCompatActivity() {
             }
 
             /** Methods */
+
             /** Overrides Async functions to download data */
             override fun onPostExecute(result: String) {
                 super.onPostExecute(result)
@@ -168,7 +174,7 @@ class MainActivity : AppCompatActivity() {
                 /** New code version as to 100 lecture */
                 return URL(urlPath).readText()
 
-                /** Previous code version as to 100 lecture */
+                /**-------------------------------------------------------- Previous code version as to 100 lecture ---------------------------------------------------------*/
 //                val xmlResult = StringBuilder()
 //
 //                try {
@@ -227,8 +233,9 @@ class MainActivity : AppCompatActivity() {
 //
 //                    return "" // If it gets to here there's been a problem. Return an empty string.
 //                }
+                /**-------------------------------------------------------- Previous code version as to 100 lecture ---------------------------------------------------------*/
+
             }
         }
     }
-
 }
