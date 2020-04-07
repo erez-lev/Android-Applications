@@ -10,6 +10,8 @@ import android.view.View
 import android.widget.Toast
 import androidx.recyclerview.widget.LinearLayoutManager
 import kotlinx.android.synthetic.main.content_main.*
+import androidx.preference.PreferenceManager
+import kotlinx.android.synthetic.main.activity_search.*
 
 private const val TAG = "MainActivity"
 
@@ -30,15 +32,6 @@ class MainActivity : BaseActivity(), GetRawData.OnDownloadComplete,
         recycler_view.addOnItemTouchListener(RecyclerItemClickListener(this, recycler_view, this))
         recycler_view.adapter = flickrRecyclerViewAdapter
 
-        val url = createUri(
-            "https://api.flickr.com/services/feeds/photos_public.gne",
-            "android,oreo",
-            "en-us",
-            true
-        )
-
-        val getRawData = GetRawData(this@MainActivity)
-        getRawData.execute(url)
 
         Log.d(TAG, "onCreate ends")
     }
@@ -92,7 +85,11 @@ class MainActivity : BaseActivity(), GetRawData.OnDownloadComplete,
         // as you specify a parent activity in AndroidManifest.xml.
         Log.d(TAG, "onOptionsItemSelected: called")
         return when (item.itemId) {
-            R.id.action_settings -> true
+            R.id.action_search -> {
+                Log.d(TAG, "onOptionsItemSelected: search item was clicked")
+                startActivity(Intent(this, SearchActivity::class.java))
+                true
+            }
             else -> super.onOptionsItemSelected(item)
         }
     }
@@ -120,6 +117,27 @@ class MainActivity : BaseActivity(), GetRawData.OnDownloadComplete,
 
     override fun onError(exception: Exception) {
         Log.e(TAG, "onError: called. Exception is $exception")
+    }
+
+    override fun onResume() {
+        Log.d(TAG, "onResume: starts")
+        super.onResume()
+        val sharedPref = PreferenceManager.getDefaultSharedPreferences(applicationContext)
+        val quertResult = sharedPref.getString(FLICKR_QUERY, "")
+
+        if (quertResult != null && quertResult.isNotEmpty()) {
+            val url = createUri(
+                "https://api.flickr.com/services/feeds/photos_public.gne",
+                quertResult,
+                "en-us",
+                true
+            )
+
+            val getRawData = GetRawData(this@MainActivity)
+            getRawData.execute(url)
+        }
+        Log.d(TAG, "onResume: ends")
+
     }
 }
 
