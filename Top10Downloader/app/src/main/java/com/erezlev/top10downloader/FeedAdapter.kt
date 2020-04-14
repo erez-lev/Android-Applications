@@ -20,7 +20,7 @@ class ViewHolder(view: View) {
 class FeedAdapter(
     context: Context,
     private val resource: Int,
-    private val applications: List<FeedEntry>
+    private var applications: List<FeedEntry>
 ) : ArrayAdapter<FeedEntry>(context, resource, applications) {
 
     /** Properties: */
@@ -28,6 +28,11 @@ class FeedAdapter(
 
 
     /** Methods: */
+    fun setFeedList(feedList: List<FeedEntry>) {
+        this.applications = feedList
+        notifyDataSetChanged()
+    }
+
     override fun getView(position: Int, convertView: View?, parent: ViewGroup): View {
 //        Log.d(TAG, "getView: called")
 //        return super.getView(position, convertView, parent)

@@ -4,7 +4,11 @@ import android.os.Bundle
 import android.util.Log
 import android.view.View
 import android.widget.Button
+import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.Observer
+import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.ViewModelProviders
 import kotlinx.android.synthetic.main.activity_main.*
 
 // Udemy solution:
@@ -13,10 +17,10 @@ import kotlinx.android.synthetic.main.activity_main.*
 // private const val STATE_OPERAND1-STORED = "operan1_Stored"
 
 // My solution:
-private const val RESULT = "Result"
-private const val PENDING = "Pending"
-private const val OPERAND1 = "Operator1"
-private const val TAG = "MainActivity"
+//private const val RESULT = "Result"
+//private const val PENDING = "Pending"
+//private const val OPERAND1 = "Operator1"
+//private const val TAG = "MainActivity"
 
 class MainActivity : AppCompatActivity() {
     // Properties:
@@ -24,14 +28,15 @@ class MainActivity : AppCompatActivity() {
 //    private lateinit var newNumber: EditText
 //    private val displayOperation by lazy(LazyThreadSafetyMode.NONE) { findViewById<TextView>(R.id.operation) }
 
-    // Variables to hold the operands and type of calculation
-    private var operand1: Double? = null
-    private var pendingOperations = "="
-
     // Methods:
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+
+        val viewModel: BigDecimalViewModel by viewModels()
+        viewModel.stringResult.observe(this, Observer<String> { stringResult -> result.setText(stringResult)})
+        viewModel.stringNewNumber.observe(this, Observer<String> { stringNumber -> newNumber.setText(stringNumber)})
+        viewModel.stringOperation.observe(this, Observer<String> { stringOperation -> operation.text = stringOperation })
 
 //        result = findViewById(R.id.result)
 //        newNumber = findViewById(R.id.newNumber)
@@ -57,8 +62,7 @@ class MainActivity : AppCompatActivity() {
 //        val buttonPlus = findViewById<Button>(R.id.buttonPlus)
 
         val listener = View.OnClickListener { v ->
-            val b = v as Button
-            newNumber.append(b.text)
+            viewModel.digitPressed((v as Button).text.toString())
         }
 
         // Set all 0-9 buttons to the setOnClickListener methods, for allowing the click able buttons.
@@ -76,15 +80,7 @@ class MainActivity : AppCompatActivity() {
 
         // Creating a listener for the operations button.
         val opListener = View.OnClickListener { v ->
-            val op = (v as Button).text.toString()
-            try {
-                val value = newNumber.text.toString().toDouble()
-                performOperation(value, op)
-            } catch (e: NumberFormatException) {
-                newNumber.setText("")
-            }
-            pendingOperations = op
-            operation.text = pendingOperations
+            viewModel.operandPressed((v as Button).text.toString())
         }
 
         // Set the operations button to be touch able.
@@ -95,109 +91,69 @@ class MainActivity : AppCompatActivity() {
         buttonPlus.setOnClickListener(opListener)
 
         // Listener for the negetive button
-        val negOperator = View.OnClickListener { view ->
-            val value = newNumber.text.toString()
-            if (value.isEmpty()) {
-                newNumber.append("-")
-            } else {
-                try {
-                    var doubleValue = value.toDouble()
-                    doubleValue *= -1
-                    newNumber.setText(doubleValue.toString())
-                } catch (e: NumberFormatException){
-                    // newNumber was "-" or ".", so clear it
-                    newNumber.setText("")
-                }
-            }
-
-
+        val negOperator = View.OnClickListener {
+            viewModel.negPressed()
         }
 
         // Set the negative button to be touchable.
         buttonNeg.setOnClickListener(negOperator)
 
         // A listener for the clear button.
-        buttonClr.setOnClickListener { view ->
-            result.setText("")
-            operation.text = ""
-            operand1 = null
+        buttonClr.setOnClickListener {
+            viewModel.clearPressed()
         }
 
     }
 
-    // Method that calculates the mathematical actions.
-    private fun performOperation(value: Double, operation: String) {
-        if (operand1 == null) {
-            operand1 = value
-        } else {
-            if (pendingOperations == "=") {
-                pendingOperations = operation
-            }
-
-            when (pendingOperations) {
-                "=" -> operand1 = value
-                "/" -> operand1 = if (value == 0.0) {
-                    Double.NaN // handle attempt to divide by zero
-                } else {
-                    operand1!! / value
-                }
-                "*" -> operand1 = operand1!! * value
-                "-" -> operand1 = operand1!! - value
-                "+" -> operand1 = operand1!! + value
-            }
-        }
-        result.setText(operand1.toString())
-        newNumber.setText("")
-
-    }
 
 
-    override fun onSaveInstanceState(outState: Bundle) {
-        // Log.d(TAG, "onSaveInstanceState: called")
-        super.onSaveInstanceState(outState)
 
-        // Udemy solution:
-//        if(operand1 != null) {
-//            outState.putDouble(STATE_OPERAND1, operand1)
-//        outState.putBoolean(STATE_OPERAND1_STORED, true)
-//        }
-//        outState.putString(STATE_PENDING_OPERTION, pendingOperations)
-
-        // My solution:
-        // Log.d(TAG, "OnSave: ${result.text}" )
-        outState.putString(RESULT, result.text.toString())
-        outState.putString(PENDING, pendingOperations)
-        if (operand1 != null)
-            outState.putDouble(OPERAND1, operand1!!)
-    }
-
-    override fun onRestoreInstanceState(savedInstanceState: Bundle) {
-        Log.d(TAG, "onRestoreInstanceState: called")
-        super.onRestoreInstanceState(savedInstanceState)
-
-        // Udemy solution
-//        if(savedInstanceState.getBoolean(STATE_OPERAND1_STORED, false)) {
-//                    operand1 = savedInstanceState.getDouble(STATE_OPERAND1)
+//    override fun onSaveInstanceState(outState: Bundle) {
+//        // Log.d(TAG, "onSaveInstanceState: called")
+//        super.onSaveInstanceState(outState)
 //
-//        } else {
-//            null
-//        }
+//        // Udemy solution:
+////        if(operand1 != null) {
+////            outState.putDouble(STATE_OPERAND1, operand1)
+////        outState.putBoolean(STATE_OPERAND1_STORED, true)
+////        }
+////        outState.putString(STATE_PENDING_OPERTION, pendingOperations)
 //
-//        pendingOperations = savedInstanceState.getString(STATE_PENDING_OPERATION)
-//        displayOperation.text = pendingOperations
-
-        // My solution
-
-        // Log.d(TAG, "OnRestore: ${result.text}" )
-        // Log.d(TAG, "OnRestore: $operand1" )
-
-        operand1 = savedInstanceState.getDouble(OPERAND1)
-        if (operand1 == null) {
-            result.setText(savedInstanceState.getString(RESULT))
-        }
-        pendingOperations = savedInstanceState.getString(PENDING)!!
-        if (pendingOperations != "=") {
-            operation.text = pendingOperations
-        }
-    }
+//        // My solution:
+//        // Log.d(TAG, "OnSave: ${result.text}" )
+//        outState.putString(RESULT, result.text.toString())
+//        outState.putString(PENDING, pendingOperations)
+//        if (operand1 != null)
+//            outState.putDouble(OPERAND1, operand1!!)
+//    }
+//
+//    override fun onRestoreInstanceState(savedInstanceState: Bundle) {
+//        Log.d(TAG, "onRestoreInstanceState: called")
+//        super.onRestoreInstanceState(savedInstanceState)
+//
+//        // Udemy solution
+////        if(savedInstanceState.getBoolean(STATE_OPERAND1_STORED, false)) {
+////                    operand1 = savedInstanceState.getDouble(STATE_OPERAND1)
+////
+////        } else {
+////            null
+////        }
+////
+////        pendingOperations = savedInstanceState.getString(STATE_PENDING_OPERATION)
+////        displayOperation.text = pendingOperations
+//
+//        // My solution
+//
+//        // Log.d(TAG, "OnRestore: ${result.text}" )
+//        // Log.d(TAG, "OnRestore: $operand1" )
+//
+//        operand1 = savedInstanceState.getDouble(OPERAND1)
+//        if (operand1 == null) {
+//            result.setText(savedInstanceState.getString(RESULT))
+//        }
+//        pendingOperations = savedInstanceState.getString(PENDING)!!
+//        if (pendingOperations != "=") {
+//            operation.text = pendingOperations
+//        }
+//    }
 }
